@@ -1,15 +1,31 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import UserContext from '../../global-context/UserInfoContext';
 import './Home.css';
 
 export function Home() {
   const navigate = useNavigate();
+  const { setUserInfo } = useContext(UserContext);
+
+  const handleSignInGoogle = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/userinfo');
+      const userInfo = await response.json();
+      console.log(response);
+      console.log(userInfo);
+
+      setUserInfo(userInfo);
+      //navigate('/dashboard');
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  };
 
   return (
     <div className="home-container">
       {/* Sign into Google Button */}
       <div style={{ position: 'fixed', top: '20px', right: '20px' }}>
-        <button>Sign in to Google</button>
+        <button onClick={handleSignInGoogle}>Sign in to Google</button>
       </div>
       {/* Title and Paragraphs */}
       <h1 className="home-title">&nbsp;&nbsp;&nbsp;&nbsp;Welcome to Spyglass: The Financial Goal Planner</h1>
