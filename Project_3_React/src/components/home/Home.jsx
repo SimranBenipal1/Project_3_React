@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
 export function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="home-container">
       {/* Sign into Google Button */}
@@ -26,7 +29,7 @@ export function Home() {
       <div className="diagonal-line"></div>
       {/* Dashboard Button */}
       <div style={{ position: 'fixed', bottom: '20px', right: '20px' }}>
-        <button>View Your Dashboard</button>
+        <button onClick={() => navigate('/dashboard')}>View Your Dashboard</button>
       </div>
     </div>
   );
