@@ -4,13 +4,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './components/home/Home';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Error } from './components/error/Error';
-import UserContext from './global-context/UserInfoContext';
+import UserInfoContext from './global-context/UserInfoContext';
 
 function App() {
   const [userInfo, setUserInfo] = useState({});
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   return (
-    <UserContext.Provider value={{ userInfo, setUserInfo }}>
+    <UserInfoContext.Provider value={{ userInfo, setUserInfo, isSignedIn, setIsSignedIn }}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -18,7 +19,7 @@ function App() {
           <Route path="/*" element={<Error />} />
         </Routes>
       </BrowserRouter>
-    </UserContext.Provider>
+    </UserInfoContext.Provider>
   );
 }
 
