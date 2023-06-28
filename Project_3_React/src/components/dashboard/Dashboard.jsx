@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfoContext from '../../global-context/UserInfoContext';
 import { makeStyles } from '@material-ui/core/styles';
-import { Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, LinearProgress } from '@material-ui/core';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import GoalDetails from './GoalDetails';
+
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -28,6 +29,12 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     paddingLeft: theme.spacing(2),
+  },
+  progressBar: {
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
   },
 }));
 
@@ -82,19 +89,25 @@ export function Dashboard() {
           Goals
         </Typography>
         <List>
-          {goals.map((goal) => (
-            <ListItem
-              button
-              key={goal.id}
-              onClick={() => handleGoalClick(goal)}
-              selected={selectedGoal && selectedGoal.id === goal.id} // Apply selected style if the goal matches the selectedGoal
-            >
-              <ListItemIcon>
-                <FlagCircleIcon />
-              </ListItemIcon>
-              <ListItemText primary={goal.name} />
-            </ListItem>
-          ))}
+          {goals.map((goal) => {
+            const progress = (goal.currentlySavedAmount / goal.targetAmount) * 100;
+
+            return (
+              <div key={goal.id} style={{ position: 'relative' }}>
+                <ListItem
+                  button
+                  onClick={() => handleGoalClick(goal)}
+                  selected={selectedGoal && selectedGoal.id === goal.id} // Apply selected style if the goal matches the selectedGoal
+                >
+                  <ListItemIcon>
+                    <FlagCircleIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={goal.name} />
+                </ListItem>
+                <LinearProgress className={classes.progressBar} variant="determinate" value={progress} />
+              </div>
+            );
+          })}
         </List>
       </Drawer>
       <main className={classes.content}>
