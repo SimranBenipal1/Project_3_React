@@ -4,7 +4,7 @@ import UserInfoContext from '../../global-context/UserInfoContext';
 import { makeStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
-
+import GoalDetails from './GoalDetails';
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -36,7 +36,7 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { isSignedIn, userInfo } = useContext(UserInfoContext);
   const [goals, setGoals] = useState([]);
-  const [selectedGoalId, setSelectedGoalId] = useState(null); // State to store the selected goal ID
+  const [selectedGoal, setSelectedGoal] = useState(null); // State to store the selected goal
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -57,9 +57,8 @@ export function Dashboard() {
     }
   }, [isSignedIn, navigate, userInfo]);
 
-  const handleGoalClick = (goalId) => {
-    console.log("Clicked " + goalId)
-    setSelectedGoalId(goalId); // Update the selectedGoalId state with the clicked goal ID
+  const handleGoalClick = (goal) => {
+    setSelectedGoal(goal); // Update the selectedGoal state with the clicked goal
   };
 
   return (
@@ -87,8 +86,8 @@ export function Dashboard() {
             <ListItem
               button
               key={goal.id}
-              onClick={() => handleGoalClick(goal.id)}
-              selected={selectedGoalId === goal.id} // Apply selected style if the goal ID matches the selectedGoalId
+              onClick={() => handleGoalClick(goal)}
+              selected={selectedGoal && selectedGoal.id === goal.id} // Apply selected style if the goal matches the selectedGoal
             >
               <ListItemIcon>
                 <FlagCircleIcon />
@@ -101,8 +100,8 @@ export function Dashboard() {
       <main className={classes.content}>
         <Toolbar />
         <div>
-          <h1>Welcome to Your Personal Dashboard! Create a Goal or Select One From the Left.</h1>
-          {/* Add the rest of your dashboard content here */}
+          {!selectedGoal && <h1>Welcome to Your Personal Dashboard! Create a Goal or Select One From the Left.</h1>}
+          {selectedGoal && <GoalDetails goal={selectedGoal} />}
         </div>
       </main>
     </div>
