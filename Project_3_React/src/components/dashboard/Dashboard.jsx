@@ -105,7 +105,8 @@ export function Dashboard() {
         </Typography>
         <List>
           {updatedGoals.map((goal) => {
-            const progress = (goal.currentlySavedAmount / goal.targetAmount) * 100;
+            //const progress = (goal.currentlySavedAmount / goal.targetAmount) * 100;
+            const progress = goal.currentlySavedAmount <= 0 ? 0 : Math.min((goal.currentlySavedAmount / goal.targetAmount) * 100, 100);
 
             return (
               <div key={goal.id} style={{ position: 'relative' }}>
