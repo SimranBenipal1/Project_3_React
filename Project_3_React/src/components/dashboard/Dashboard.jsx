@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import UserInfoContext from '../../global-context/UserInfoContext';
 import { makeStyles } from '@material-ui/core/styles';
-import { Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, LinearProgress } from '@material-ui/core';
+import { Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, LinearProgress, Button } from '@material-ui/core';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 import GoalDetails from './GoalDetails';
+import AddGoalDialog from './AddGoalDialog';
 
 const drawerWidth = 240;
 
@@ -36,6 +37,9 @@ const useStyles = makeStyles((theme) => ({
     bottom: 0,
     left: 0,
   },
+  addButton: {
+    marginTop: 'auto',
+  },
 }));
 
 export function Dashboard() {
@@ -44,6 +48,8 @@ export function Dashboard() {
   const { isSignedIn, userInfo } = useContext(UserInfoContext);
   const [goals, setGoals] = useState([]);
   const [selectedGoal, setSelectedGoal] = useState(null); // State to store the selected goal
+  const [addGoalDialogOpen, setAddGoalDialogOpen] = useState(false); // State to manage the open state of the Add Goal dialog
+  const [updatedGoals, setUpdatedGoals] = useState([]); // State to store the updated goals list
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -57,15 +63,24 @@ export function Dashboard() {
         .then((response) => response.json())
         .then((data) => {
           setGoals(data);
+          setUpdatedGoals(data); // Update the updated goals list as well
         })
         .catch((error) => {
           console.error(error);
         });
     }
-  }, [isSignedIn, navigate, userInfo]);
+  }, [isSignedIn, navigate, userInfo, updatedGoals]);
 
   const handleGoalClick = (goal) => {
     setSelectedGoal(goal); // Update the selectedGoal state with the clicked goal
+  };
+
+  const handleAddGoal = () => {
+    setAddGoalDialogOpen(true); // Open the Add Goal dialog
+  };
+
+  const handleAddGoalDialogClose = () => {
+    setAddGoalDialogOpen(false); // Close the Add Goal dialog
   };
 
   return (
@@ -89,7 +104,7 @@ export function Dashboard() {
           Goals
         </Typography>
         <List>
-          {goals.map((goal) => {
+          {updatedGoals.map((goal) => {
             const progress = (goal.currentlySavedAmount / goal.targetAmount) * 100;
 
             return (
@@ -109,6 +124,9 @@ export function Dashboard() {
             );
           })}
         </List>
+        <Button className={classes.addButton} variant="contained" color="primary" onClick={handleAddGoal}>
+          Add a goal
+        </Button>
       </Drawer>
       <main className={classes.content}>
         <Toolbar />
@@ -117,6 +135,12 @@ export function Dashboard() {
           {selectedGoal && <GoalDetails goal={selectedGoal} />}
         </div>
       </main>
+      {addGoalDialogOpen && (
+        <AddGoalDialog
+          open={addGoalDialogOpen}
+          onClose={handleAddGoalDialogClose}
+        />
+      )}
     </div>
   );
 }
