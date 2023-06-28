@@ -50,11 +50,16 @@ const AddGoalDialog = ({ open, onClose }) => {
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json', // Specify the content type as JSON
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(data),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then((result) => {
                 console.log('Goal submitted successfully:', result);
                 onClose();
@@ -63,6 +68,7 @@ const AddGoalDialog = ({ open, onClose }) => {
                 console.error('Error submitting goal:', error);
                 // Handle error here
             });
+        
     }
 
 
