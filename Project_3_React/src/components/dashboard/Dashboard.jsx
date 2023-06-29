@@ -50,6 +50,7 @@ export function Dashboard() {
   const [selectedGoal, setSelectedGoal] = useState(null); // State to store the selected goal
   const [addGoalDialogOpen, setAddGoalDialogOpen] = useState(false); // State to manage the open state of the Add Goal dialog
   const [updatedGoals, setUpdatedGoals] = useState([]); // State to store the updated goals list
+  
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -82,6 +83,23 @@ export function Dashboard() {
   const handleAddGoalDialogClose = () => {
     setAddGoalDialogOpen(false); // Close the Add Goal dialog
   };
+
+  const updateGoals = () => {
+    const sub = userInfo.sub;
+  
+    fetch(import.meta.env.VITE_API_URI + '/goals/sub/' + sub, {
+      credentials: 'include'
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setGoals(data);
+        setUpdatedGoals(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  
 
   return (
     <div className={classes.root}>
@@ -133,7 +151,7 @@ export function Dashboard() {
         <Toolbar />
         <div>
           {!selectedGoal && <h1>Welcome to Your Personal Dashboard! Create a Goal or Select One From the Left.</h1>}
-          {selectedGoal && <GoalDetails goal={selectedGoal} />}
+          {selectedGoal && <GoalDetails goal={selectedGoal} setGoal={setSelectedGoal}/>}
         </div>
       </main>
       {addGoalDialogOpen && (

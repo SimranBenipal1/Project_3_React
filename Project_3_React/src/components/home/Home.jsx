@@ -4,7 +4,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import UserInfoContext from '../../global-context/UserInfoContext';
 
-import './Home.css';
+import styles from './Home.css';
 
 export function Home() {
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ export function Home() {
   };
 
   return (
-    <div className="home-container">
+    <div className={styles.myStyle}>
       <div style={{ position: 'fixed', top: '20px', right: '20px', display: 'flex', alignItems: 'center' }}>
         {isSignedIn && userInfo.picture && (
           <div style={{ display: 'flex', alignItems: 'center' }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@material-ui/core';
 import UserInfoContext from '../../global-context/UserInfoContext';
+import BarGraph from './BarGraph';
 
 function EditGoalDialog({ open, onClose, goal, onUpdate }) {
   const [goalData, setGoalData] = useState({
@@ -94,11 +95,11 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
   );
 }
 
-function GoalDetails({ goal }) {
+function GoalDetails({ goal, setGoal }) {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { userInfo } = useContext(UserInfoContext);
-
+  
   const handleDelete = () => {
     // Send a DELETE request to /goals/:id
     fetch(`${import.meta.env.VITE_API_URI}/goals/${goal.id}`, {
@@ -109,7 +110,6 @@ function GoalDetails({ goal }) {
         if (!response.ok) {
           throw new Error('Error deleting goal');
         }
-        // Perform any additional actions or updates after deleting the goal
         handleCloseConfirmDialog(); // Close the confirmation dialog after successful deletion
       })
       .catch((error) => {
@@ -159,6 +159,7 @@ function GoalDetails({ goal }) {
       })
       .then((result) => {
         console.log('Goal updated successfully:', result);
+        setGoal(result);
         handleCloseEditDialog(); // Close the edit dialog after successful update
       })
       .catch((error) => {
@@ -180,6 +181,11 @@ function GoalDetails({ goal }) {
       <p>Target Date: {goal.targetDate}</p>
       <p>Target Amount: {goal.targetAmount}</p>
       <p>Currently Saved Amount: {goal.currentlySavedAmount}</p>
+      <div>
+      {/* ... */}
+      <BarGraph targetAmount={goal.targetAmount} currentlySavedAmount={goal.currentlySavedAmount} />
+      {/* ... */}
+      </div>
       <button onClick={handleConfirmDelete}>Delete</button>
       <button onClick={handleEdit}>Edit</button>
 
