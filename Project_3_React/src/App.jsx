@@ -5,6 +5,7 @@ import { Home } from './components/home/Home';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Error } from './components/error/Error';
 import UserInfoContext from './global-context/UserInfoContext';
+import FileUpload from './components/test-component/FileUpload';
 
 function App() {
   const [userInfo, setUserInfo] = useState({});
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/test" element={<FileUpload/>} /> 
           <Route path="/*" element={<Error />} />
         </Routes>
       </BrowserRouter>

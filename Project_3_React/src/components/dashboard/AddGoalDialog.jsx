@@ -13,7 +13,7 @@ const AddGoalDialog = ({ open, onClose }) => {
         targetAmount: '',
         currentlySavedAmount: '',
         targetDate: '',
-        picture: null,
+        picture: '',
     });
 
     const handleInputChange = (event) => {
@@ -28,46 +28,68 @@ const AddGoalDialog = ({ open, onClose }) => {
         const file = event.target.files[0];
         setGoalData((prevState) => ({
             ...prevState,
-            picture: file,
+            file: file, // Update the key to 'file'
         }));
     };
 
     const handleSubmit = () => {
-        // TODO: DONT FORGET THE S3 BUCKET UPLOAD ASKJDAFSLKJNADSNKJLADSKJNASDKJNLADSKJNLDASKJNLNKLJADFSKJLNFKJHBNFLJHBGFDLJHBGFDJHBFD DONT FORGET
-        const sub = userInfo.sub;
+        let pictureURL = '' 
 
-        const data = {
-            sub: sub,
-            name: goalData.goalName,
-            description: goalData.goalDescription,
-            picture: "S3 URL STUFF", //goalData.picture ? URL.createObjectURL(goalData.picture) : null,
-            targetDate: goalData.targetDate,
-            targetAmount: parseFloat(goalData.targetAmount), // Convert to number
-            currentlySavedAmount: parseFloat(goalData.currentlySavedAmount), // Convert to number
-        };
+        const formData = new FormData();
+        formData.append('file', goalData.file);
 
-        fetch(import.meta.env.VITE_API_URI + '/goals', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
+        fetch(import.meta.env.VITE_API_URI  + "/upload", {
+            method: "POST",
+            body: formData,
+            credentials: "include"
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+        .then(response => response.text())
+        .then(dataString => {
+            const urlPrefix = "URL: ";
+            const startIndex = dataString.indexOf(urlPrefix);
+            if (startIndex !== -1) {
+                pictureURL = dataString.substring(startIndex + urlPrefix.length);
+            }
+
+            const sub = userInfo.sub;
+
+            const data = {
+                sub: sub,
+                name: goalData.goalName,
+                description: goalData.goalDescription,
+                picture: pictureURL,
+                targetDate: goalData.targetDate,
+                targetAmount: parseFloat(goalData.targetAmount), // Convert to number
+                currentlySavedAmount: parseFloat(goalData.currentlySavedAmount), // Convert to number
+            };
+    
+            fetch(import.meta.env.VITE_API_URI + '/goals', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             })
-            .then((result) => {
-                console.log('Goal submitted successfully:', result);
-                onClose();
-            })
-            .catch((error) => {
-                console.error('Error submitting goal:', error);
-                // Handle error here
-            });
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then((result) => {
+                    console.log('Goal submitted successfully:', result);
+                    onClose();
+                })
+                .catch((error) => {
+                    console.error('Error submitting goal:', error);
+                    // Handle error here
+                });
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            setMessage("An error occurred during file upload");
+        });
         
     }
 

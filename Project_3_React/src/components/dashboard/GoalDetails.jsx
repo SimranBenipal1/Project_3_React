@@ -186,6 +186,7 @@ function GoalDetails({ goal, setGoal }) {
       <BarGraph targetAmount={goal.targetAmount} currentlySavedAmount={goal.currentlySavedAmount} />
       {/* ... */}
       </div>
+      <img src={goal.picture}></img>
       <button onClick={handleConfirmDelete}>Delete</button>
       <button onClick={handleEdit}>Edit</button>
 
