@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './components/home/Home';
@@ -10,6 +10,10 @@ import FileUpload from './components/test-component/FileUpload';
 function App() {
   const [userInfo, setUserInfo] = useState({});
   const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    document.title = 'SpyGlass';
+  }, []);
 
   return (
     <UserInfoContext.Provider value={{ userInfo, setUserInfo, isSignedIn, setIsSignedIn }}>
