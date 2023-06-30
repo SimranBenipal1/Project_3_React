@@ -21,7 +21,7 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
         targetAmount: goal.targetAmount,
         currentlySavedAmount: goal.currentlySavedAmount,
         targetDate: goal.targetDate,
-        picture: null, // Initialize the picture state with null
+        picture: goal.picture, 
       });
     }
   }, [goal]);
@@ -111,7 +111,7 @@ function GoalDetails({ goal, setGoal }) {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { userInfo } = useContext(UserInfoContext);
-  
+
   const handleDelete = () => {
     // Send a DELETE request to /goals/:id
     fetch(`${import.meta.env.VITE_API_URI}/goals/${goal.id}`, {
@@ -144,35 +144,47 @@ function GoalDetails({ goal, setGoal }) {
 
   const handleUpdateGoal = async (updatedGoalData) => {
     const sub = userInfo.sub;
+
+    let pictureURL;
+
+    // Check if the picture is a file
+    if (typeof updatedGoalData.picture === 'object' && updatedGoalData.picture instanceof File) {
+      try {
+        // Upload the picture file
+        const formData = new FormData();
+        formData.append('file', updatedGoalData.picture);
   
-    try {
-      // Upload the picture file
-      const formData = new FormData();
-      formData.append('file', updatedGoalData.picture);
+        const uploadResponse = await fetch(`${import.meta.env.VITE_API_URI}/upload`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
   
-      const uploadResponse = await fetch(`${import.meta.env.VITE_API_URI}/upload`, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
+        if (!uploadResponse.ok) {
+          throw new Error('Error uploading picture');
+        }
   
-      if (!uploadResponse.ok) {
-        throw new Error('Error uploading picture');
+        pictureURL = await uploadResponse.text();
+      } catch (error) {
+        console.error('Error uploading picture:', error);
+        // Handle error here
       }
+    } else if (typeof updatedGoalData.picture === 'string') {
+      // Use the existing picture URL if it's a string
+      pictureURL = updatedGoalData.picture;
+    }
   
-      const pictureURL = await uploadResponse.text();
-  
-      // Update the goal with the new data and picture URL
-      const data = {
-        sub: sub,
-        name: updatedGoalData.goalName,
-        description: updatedGoalData.goalDescription,
-        picture: pictureURL,
-        targetDate: updatedGoalData.targetDate,
-        targetAmount: parseFloat(updatedGoalData.targetAmount),
-        currentlySavedAmount: parseFloat(updatedGoalData.currentlySavedAmount),
-      };
-  
+    // Update the goal with the new data and picture URL
+    const data = {
+      sub: sub,
+      name: updatedGoalData.goalName,
+      description: updatedGoalData.goalDescription,
+      picture: pictureURL,
+      targetDate: updatedGoalData.targetDate,
+      targetAmount: parseFloat(updatedGoalData.targetAmount),
+      currentlySavedAmount: parseFloat(updatedGoalData.currentlySavedAmount),
+    };
+
       const updateResponse = await fetch(`${import.meta.env.VITE_API_URI}/goals/${goal.id}`, {
         method: 'PUT',
         credentials: 'include',
@@ -181,20 +193,16 @@ function GoalDetails({ goal, setGoal }) {
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!updateResponse.ok) {
         throw new Error('Error updating goal');
       }
-  
+
       const updatedGoal = await updateResponse.json();
-  
+
       console.log('Goal updated successfully:', updatedGoal);
       setGoal(updatedGoal);
       handleCloseEditDialog(); // Close the edit dialog after successful update
-    } catch (error) {
-      console.error('Error updating goal:', error);
-      // Handle error here
-    }
   };
 
   const handleCloseEditDialog = () => {
@@ -202,27 +210,86 @@ function GoalDetails({ goal, setGoal }) {
   };
 
   return (
-    <div>
-      <h2>Selected Goal:</h2>
-      <p>Goal ID: {goal.id}</p>
-      <p>Goal Name: {goal.name}</p>
-      <p>Goal Description: {goal.description}</p>
-      <p>Target Date: {goal.targetDate}</p>
-      <p>Target Amount: {goal.targetAmount}</p>
-      <p>Currently Saved Amount: {goal.currentlySavedAmount}</p>
-      <div>
-      {/* ... */}
-      <BarGraph targetAmount={goal.targetAmount} currentlySavedAmount={goal.currentlySavedAmount} />
-      {/* ... */}
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          border: '5px solid #ccc',
+          borderRadius: '10px',
+          padding: '10px',
+          marginBottom: '20px',
+          display: 'flex',
+          minWidth: '83vw',
+        }}
+      >
+        <div style={{ flex: '1', marginRight: '20px' }}>
+          <h2>Selected Goal:</h2>
+          <p>Goal ID: {goal.id}</p>
+          <p>Goal Name: {goal.name}</p>
+          <p>Goal Description: {goal.description}</p>
+        </div>
+        <div style={{ flex: '1', display: 'flex', justifyContent: 'flex-end' }}>
+          <img
+            src={goal.picture}
+            alt="Goal"
+            style={{
+              minWidth: '200px',
+              minHeight: '200px',
+              maxWidth: '200px',
+              maxHeight: '200px',
+            }}
+          />
+        </div>
       </div>
-      <img src={goal.picture}></img>
-      <button onClick={handleConfirmDelete}>Delete</button>
-      <button onClick={handleEdit}>Edit</button>
+      <div
+        style={{
+          display: 'flex',
+          marginBottom: '20px',
+          minWidth: '70vw',
+        }}
+      >
+        <div
+          style={{
+            flex: '1',
+            border: '5px solid #ccc',
+            borderRadius: '4px',
+            padding: '10px',
+          }}
+        >
+          <h2>Goal Details:</h2>
+          <p>Target Amount: {goal.targetAmount}</p>
+          <p>Currently Saved Amount: {goal.currentlySavedAmount}</p>
+          <p>Target Date: {goal.targetDate}</p>
+          <BarGraph targetAmount={goal.targetAmount} currentlySavedAmount={goal.currentlySavedAmount} />
+        </div>
+      </div>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+        }}
+      >
+        <button onClick={handleConfirmDelete}>Delete</button>
+        <button onClick={handleEdit}>Edit</button>
+      </div>
 
+
+      {/* Dialog components... */}
       <Dialog open={confirmDialogOpen} onClose={handleCloseConfirmDialog}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+      </Dialog>
+
+      <EditGoalDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        goal={goal}
+        onUpdate={handleUpdateGoal}
+      />
+
+      {/* Delete Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={handleCloseConfirmDialog}>
+        <DialogTitle>Delete Goal</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete the goal "{goal.name}"?
+          {/* Dialog content for deletion confirmation */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirmDialog} color="primary">
@@ -233,13 +300,6 @@ function GoalDetails({ goal, setGoal }) {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <EditGoalDialog
-        open={editDialogOpen}
-        onClose={handleCloseEditDialog}
-        goal={goal}
-        onUpdate={handleUpdateGoal}
-      />
     </div>
   );
 }

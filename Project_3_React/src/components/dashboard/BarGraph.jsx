@@ -12,7 +12,7 @@ const BarGraph = ({ targetAmount, currentlySavedAmount }) => {
         labels: ['Target Amount', 'Currently Saved Amount'],
         datasets: [
           {
-            label: 'Goal Progress',
+            label: 'Target Amount',
             data: [targetAmount, currentlySavedAmount],
             backgroundColor: [
               'rgba(54, 162, 235, 0.2)', // Blue color for target amount

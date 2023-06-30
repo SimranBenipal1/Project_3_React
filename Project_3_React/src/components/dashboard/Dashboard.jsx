@@ -16,6 +16,7 @@ const useStyles = makeStyles((theme) => ({
   appBar: {
     width: `calc(100% - ${drawerWidth}px)`,
     marginLeft: drawerWidth,
+    background: '#a20a35',
   },
   drawer: {
     width: drawerWidth,
@@ -23,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerPaper: {
     width: drawerWidth,
+    background: '#f5f5f5',
   },
   content: {
     flexGrow: 1,
@@ -30,15 +32,31 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     paddingLeft: theme.spacing(2),
+    color: '#a20a35',
+    fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+    fontSize: '2.5rem',
+  },
+  listItem: {
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    fontSize: '1.8rem', // Increase the font size of Goal names in the drawer
   },
   progressBar: {
     width: '100%',
     position: 'absolute',
     bottom: 0,
     left: 0,
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: '#a20a35',
+    },
   },
   addButton: {
     marginTop: 'auto',
+    background: '#a20a35',
+    color: '#fff',
+    '&:hover': {
+      background: '#880524',
+    },
   },
 }));
 
@@ -47,10 +65,9 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { isSignedIn, userInfo } = useContext(UserInfoContext);
   const [goals, setGoals] = useState([]);
-  const [selectedGoal, setSelectedGoal] = useState(null); // State to store the selected goal
-  const [addGoalDialogOpen, setAddGoalDialogOpen] = useState(false); // State to manage the open state of the Add Goal dialog
-  const [updatedGoals, setUpdatedGoals] = useState([]); // State to store the updated goals list
-  
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [addGoalDialogOpen, setAddGoalDialogOpen] = useState(false);
+  const [updatedGoals, setUpdatedGoals] = useState([]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -64,7 +81,7 @@ export function Dashboard() {
         .then((response) => response.json())
         .then((data) => {
           setGoals(data);
-          setUpdatedGoals(data); // Update the updated goals list as well
+          setUpdatedGoals(data);
         })
         .catch((error) => {
           console.error(error);
@@ -73,20 +90,20 @@ export function Dashboard() {
   }, [isSignedIn, navigate, userInfo, updatedGoals]);
 
   const handleGoalClick = (goal) => {
-    setSelectedGoal(goal); // Update the selectedGoal state with the clicked goal
+    setSelectedGoal(goal);
   };
 
   const handleAddGoal = () => {
-    setAddGoalDialogOpen(true); // Open the Add Goal dialog
+    setAddGoalDialogOpen(true);
   };
 
   const handleAddGoalDialogClose = () => {
-    setAddGoalDialogOpen(false); // Close the Add Goal dialog
+    setAddGoalDialogOpen(false);
   };
 
   const updateGoals = () => {
     const sub = userInfo.sub;
-  
+
     fetch(import.meta.env.VITE_API_URI + '/goals/sub/' + sub, {
       credentials: 'include'
     })
@@ -99,7 +116,6 @@ export function Dashboard() {
         console.error(error);
       });
   };
-  
 
   return (
     <div className={classes.root}>
@@ -123,7 +139,6 @@ export function Dashboard() {
         </Typography>
         <List>
           {updatedGoals.map((goal) => {
-            //const progress = (goal.currentlySavedAmount / goal.targetAmount) * 100;
             const progress = goal.currentlySavedAmount <= 0 ? 0 : Math.min((goal.currentlySavedAmount / goal.targetAmount) * 100, 100);
 
             return (
@@ -131,7 +146,8 @@ export function Dashboard() {
                 <ListItem
                   button
                   onClick={() => handleGoalClick(goal)}
-                  selected={selectedGoal && selectedGoal.id === goal.id} // Apply selected style if the goal matches the selectedGoal
+                  selected={selectedGoal && selectedGoal.id === goal.id}
+                  className={classes.listItem} // Apply the custom listItem class
                 >
                   <ListItemIcon>
                     <FlagCircleIcon />
