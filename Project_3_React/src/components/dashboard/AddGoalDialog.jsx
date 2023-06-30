@@ -45,11 +45,8 @@ const AddGoalDialog = ({ open, onClose }) => {
         })
         .then(response => response.text())
         .then(dataString => {
-            const urlPrefix = "URL: ";
-            const startIndex = dataString.indexOf(urlPrefix);
-            if (startIndex !== -1) {
-                pictureURL = dataString.substring(startIndex + urlPrefix.length);
-            }
+            console.log(dataString);
+            pictureURL = dataString;
 
             const sub = userInfo.sub;
 
@@ -62,7 +59,7 @@ const AddGoalDialog = ({ open, onClose }) => {
                 targetAmount: parseFloat(goalData.targetAmount), // Convert to number
                 currentlySavedAmount: parseFloat(goalData.currentlySavedAmount), // Convert to number
             };
-    
+
             fetch(import.meta.env.VITE_API_URI + '/goals', {
                 method: 'POST',
                 credentials: 'include',

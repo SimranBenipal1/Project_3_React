@@ -10,6 +10,7 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
     targetAmount: '',
     currentlySavedAmount: '',
     targetDate: '',
+    picture: null, // Added picture state to hold the uploaded file
   });
 
   useEffect(() => {
@@ -20,6 +21,7 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
         targetAmount: goal.targetAmount,
         currentlySavedAmount: goal.currentlySavedAmount,
         targetDate: goal.targetDate,
+        picture: null, // Initialize the picture state with null
       });
     }
   }, [goal]);
@@ -29,6 +31,14 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
     setGoalData((prevState) => ({
       ...prevState,
       [name]: value,
+    }));
+  };
+
+  const handlePictureUpload = (event) => {
+    const file = event.target.files[0];
+    setGoalData((prevState) => ({
+      ...prevState,
+      picture: file,
     }));
   };
 
@@ -82,6 +92,7 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
             shrink: true,
           }}
         />
+        <input type="file" onChange={handlePictureUpload} accept="image/*" /> {/* Add file input for picture upload */}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
@@ -94,6 +105,7 @@ function EditGoalDialog({ open, onClose, goal, onUpdate }) {
     </Dialog>
   );
 }
+
 
 function GoalDetails({ goal, setGoal }) {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -130,42 +142,59 @@ function GoalDetails({ goal, setGoal }) {
     setEditDialogOpen(true);
   };
 
-  const handleUpdateGoal = (updatedGoalData) => {
+  const handleUpdateGoal = async (updatedGoalData) => {
     const sub = userInfo.sub;
-
-    const data = {
-      sub: sub,
-      name: updatedGoalData.goalName,
-      description: updatedGoalData.goalDescription,
-      picture: "S3 URL STUFF", //goalData.picture ? URL.createObjectURL(goalData.picture) : null,   
-      targetDate: updatedGoalData.targetDate,
-      targetAmount: parseFloat(updatedGoalData.targetAmount),
-      currentlySavedAmount: parseFloat(updatedGoalData.currentlySavedAmount),
-    };
-
-    fetch(`${import.meta.env.VITE_API_URI}/goals/${goal.id}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error updating goal');
-        }
-        return response.json();
-      })
-      .then((result) => {
-        console.log('Goal updated successfully:', result);
-        setGoal(result);
-        handleCloseEditDialog(); // Close the edit dialog after successful update
-      })
-      .catch((error) => {
-        console.error('Error updating goal:', error);
-        // Handle error here
+  
+    try {
+      // Upload the picture file
+      const formData = new FormData();
+      formData.append('file', updatedGoalData.picture);
+  
+      const uploadResponse = await fetch(`${import.meta.env.VITE_API_URI}/upload`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
       });
+  
+      if (!uploadResponse.ok) {
+        throw new Error('Error uploading picture');
+      }
+  
+      const pictureURL = await uploadResponse.text();
+  
+      // Update the goal with the new data and picture URL
+      const data = {
+        sub: sub,
+        name: updatedGoalData.goalName,
+        description: updatedGoalData.goalDescription,
+        picture: pictureURL,
+        targetDate: updatedGoalData.targetDate,
+        targetAmount: parseFloat(updatedGoalData.targetAmount),
+        currentlySavedAmount: parseFloat(updatedGoalData.currentlySavedAmount),
+      };
+  
+      const updateResponse = await fetch(`${import.meta.env.VITE_API_URI}/goals/${goal.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!updateResponse.ok) {
+        throw new Error('Error updating goal');
+      }
+  
+      const updatedGoal = await updateResponse.json();
+  
+      console.log('Goal updated successfully:', updatedGoal);
+      setGoal(updatedGoal);
+      handleCloseEditDialog(); // Close the edit dialog after successful update
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      // Handle error here
+    }
   };
 
   const handleCloseEditDialog = () => {
